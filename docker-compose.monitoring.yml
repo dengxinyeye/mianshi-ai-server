@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # 把我们的配置文件挂进去
+      - prometheus_data:/prometheus # 数据持久化
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - '3001:3000' # 容器内 3000，映射到主机 3001（避免与 NestJS 冲突）
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Grafana 初始密码设为 admin
+    volumes:
+      - grafana_data:/var/lib/grafana # 数据持久化
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - '9100:9100'
+    volumes:
+      - /proc:/host/proc:ro # 读取系统进程信息
+      - /sys:/host/sys:ro # 读取系统信息
+      - /:/rootfs:ro # 读取根文件系统
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - monitoring
+
+volumes:
+  prometheus_data: # Prometheus 数据卷
+  grafana_data: # Grafana 数据卷
+
+networks:
+  monitoring: # 这个网络让三个容器能互相通信

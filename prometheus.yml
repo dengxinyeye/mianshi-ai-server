@@ -1,0 +1,16 @@
+global:
+  # 全局配置
+  scrape_interval: 15s # 每 15 秒采集一次指标
+  evaluation_interval: 15s # 每 15 秒评估一次告警规则
+
+scrape_configs:
+  # 我们应用的指标
+  - job_name: 'nestjs-app'
+    static_configs:
+      - targets: ['localhost:3000'] # 告诉 Prometheus：去 localhost:3000 拉指标
+    metrics_path: '/metrics' # 从 /metrics 这个路由拉
+
+  # 系统级别的指标（由 Node Exporter 提供）
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100'] # Node Exporter 监听在 9100 端口
