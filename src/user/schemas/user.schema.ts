@@ -33,23 +33,27 @@ export class User {
   password?: string;
 
   // 配额相关（这很关键）
+  //
+  // 说明：本项目已移除支付模块，旺旺币不再通过充值获得，改为「注册即赠送」。
+  // 三层配额模型保持不变：旺旺币（通用货币）→ 各服务次数（专用票券）→ 消耗时原子扣减。
+  // 兑换比例见 interview.service.ts 的 EXCHANGE_COST（20 币 = 1 次）。
   @Prop({ default: 0 })
   aiInterviewRemainingCount: number; // AI模拟面试剩余次数
 
   @Prop({ default: 0 })
   aiInterviewRemainingMinutes: number; // AI模拟面试剩余时间（分钟）
 
-  @Prop({ default: 0 })
-  wwCoinBalance: number; // 旺旺币余额
+  @Prop({ default: 100 })
+  wwCoinBalance: number; // 旺旺币余额（注册赠送 100，可兑换 5 次服务）
 
-  @Prop({ default: 0 })
-  resumeRemainingCount: number; // 简历押题剩余次数
+  @Prop({ default: 1 })
+  resumeRemainingCount: number; // 简历押题剩余次数（注册赠送 1 次，可直接体验）
 
-  @Prop({ default: 0 })
-  specialRemainingCount: number; // 专项面试剩余次数
+  @Prop({ default: 1 })
+  specialRemainingCount: number; // 专项面试剩余次数（注册赠送 1 次）
 
-  @Prop({ default: 0 })
-  behaviorRemainingCount: number; // 综合面试剩余次数
+  @Prop({ default: 1 })
+  behaviorRemainingCount: number; // 综合面试剩余次数（注册赠送 1 次）
 
   // 用户行为追踪
   @Prop()
