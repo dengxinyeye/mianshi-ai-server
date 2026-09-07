@@ -592,10 +592,26 @@ export class InterviewService {
   ): Subject<ProgressEvent> {
     const subject = new Subject<ProgressEvent>();
 
-    // 异步执行，通过 Subject 发送进度
-    this.executeResumeQuiz(userId, dto, subject).catch((error) => {
-      subject.error(error);
-    });
+    // 异步执行，通过 Subject 发送进度和最终结果
+    this.executeResumeQuiz(userId, dto, subject)
+      .then((result) => {
+        if (!subject.closed) {
+          subject.next({
+            type: 'complete',
+            progress: 100,
+            label: '✅ 押题分析完成',
+            message: '✅ 押题分析完成',
+            stage: 'done',
+            data: result,
+          });
+          subject.complete();
+        }
+      })
+      .catch((error) => {
+        if (!subject.closed) {
+          subject.error(error);
+        }
+      });
 
     return subject;
   }
@@ -876,12 +892,6 @@ export class InterviewService {
         interviewTips: analysisResult.interviewTips,
       };
 
-      // 发送完成事件
-      this.emitProgress(
-        progressSubject,
-        100,
-        `✅ 所有分析完成，正在保存结果...响应数据为${JSON.stringify(result)}`,
-      );
       return result;
     } catch (error) {
       this.logger.error(
@@ -1333,8 +1343,8 @@ export class InterviewService {
         userId,
         interviewType:
           dto.interviewType === MockInterviewType.SPECIAL
-            ? 'special'
-            : 'behavior',
+            ? AIInterviewType.SPECIAL
+            : AIInterviewType.BEHAVIOR,
         company: dto.company || '',
         position: dto.positionName,
         salaryRange,
@@ -1990,8 +2000,8 @@ export class InterviewService {
         userId: session.userId,
         interviewType:
           session.interviewType === MockInterviewType.SPECIAL
-            ? 'special'
-            : 'behavior',
+            ? AIInterviewType.SPECIAL
+            : AIInterviewType.BEHAVIOR,
         company: session.company || '', // 公司名称
         position: session.positionName, // 职位名称
         salaryRange: session.salaryRange, // 工资范围
